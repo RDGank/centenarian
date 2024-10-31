@@ -1,0 +1,24 @@
+#using CCA method via CCA_rm_batch function
+CCA_rm_batch<-function(project,split.by,nfeatures,dims,resolution){
+  sc.list<-SplitObject(project, split.by = split.by)
+  sc.list = lapply(sc.list, function(x) {
+    x = NormalizeData(x) %>% 
+      FindVariableFeatures(nfeatures = nfeatures) %>% 
+      ScaleData()
+    return(x)
+  })
+  sc.anchors <- FindIntegrationAnchors(object.list = sc.list, 
+                                       dims = 1:10)
+  sc.combined <- IntegrateData(anchorset = sc.anchors, 
+                               dims = 1:10)
+  DefaultAssay(sc.combined) <- "integrated"
+  sc.combined <- sc.combined %>% ScaleData() %>% 
+    RunPCA() %>% FindNeighbors(dims = 1:dims) %>% 
+    RunUMAP(dims = 1:dims) %>% 
+    RunTSNE(dims = 1:dims) %>%
+    FindClusters(resolution = resolution)
+  project <- sc.combined
+  return(project)
+}
+#eg
+sce<-CCA_rm_batch(sce,split.by = 'orig.ident',nfeatures = 3500,dims = 10,resolution = 0.8)
