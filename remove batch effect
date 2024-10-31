@@ -1,4 +1,5 @@
 #using CCA method via CCA_rm_batch function
+#low speed
 CCA_rm_batch<-function(project,split.by,nfeatures,dims,resolution){
   sc.list<-SplitObject(project, split.by = split.by)
   sc.list = lapply(sc.list, function(x) {
@@ -22,3 +23,24 @@ CCA_rm_batch<-function(project,split.by,nfeatures,dims,resolution){
 }
 #eg
 sce<-CCA_rm_batch(sce,split.by = 'orig.ident',nfeatures = 3500,dims = 10,resolution = 0.8)
+
+#using harmony method via HAR_rm_batch
+#high speed;
+HAR_rm_batch<-function(project,split.by){
+  print(dim(project))
+  project <- NormalizeData(project, normalization.method = "LogNormalize",scale.factor = 1e4)%>% 
+  FindVariableFeatures()%>%
+  ScaleData()%>%
+  RunPCA(features = VariableFeatures(object = project))%>%
+  RunHarmony(split.by)%>%
+  RunUMAP(dims = 1:15,reduction = "harmony")%>%
+  RunTSNE(dims = 1:15,reduction = "harmony",chech_duplicates=F)%>%
+  FindNeighbors(reduction = "harmony",dims = 1:15) 
+
+  for (res in c(0.5,0.8,1)) {
+    project=FindClusters(project,resolution = res, algorithm = 1)
+  }
+  return(project)
+}
+#eg
+sce<-HAR_rm_batch(sce,'orig.ident')
