@@ -1,0 +1,83 @@
+#NK cells
+library(stringr)
+sce@meta.data$celltype<-sce@meta.data$seurat_clusters
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'10','NK-FOS-BRCA①')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'0','NK-SGCD')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'1','NK-KLRC③')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'2','NK-KLRB①')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'3','NK-ACTG①')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'4','NK-ACTB')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'5','NK-FOS')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'6','NK-THEMIS-SFXN②')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'7','NK-ACTB')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'8','NK-SFXN②')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'9','NK-ACTG①')
+
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'①','1')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'②','2')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'③','3')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'④','4')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'⑤','5')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'⑥','6')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'⑦','7')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'⑧','8')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'⑨','9')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'','')
+
+
+#B cells
+library(stringr)
+sce@meta.data$celltype<-sce@meta.data$seurat_clusters
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'8','PLasma')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'7','Breg')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'6','MemoryB-TFEC')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'5','MemoryB-CD②⑦')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'4','NaiveB-NEIL①')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'3','MemoryB-CD⑧⑥')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'2','NaiveB-IGHD')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'1','MemoryB-AIM②')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'0','NaiveB-IL④R')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'','')
+
+
+#Myeloid cells 
+
+DotPlot(sce,features = c('CLEC4C','GZMB'#pDC
+                         ,'G0S2','FCGR3B'#Neutrophil
+                         ,'CD1C','CD1D'#DC
+                         ,'CD14','FCGR3A',#monocyte
+                         'GNG11','PPBP'#Megakaryocyte
+                         ),assay = 'RNA')
+
+DotPlot(sce,features = c('MKI67','TK1'),assay = 'RNA')
+
+library(stringr)
+sce@meta.data$celltype<-sce@meta.data$seurat_clusters
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'10','DC')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'11','Neutrophil')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'12','Macrophage')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'13','Megakaryocyte')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'14','Megakaryocyte')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'15','pDC')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'16','Macrophage')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'17','Monocyte-FCGR三A')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'18','DC')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'19','Neutrophil')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'0','Monocyte-FCGR三A')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'1','Monocyte-IL一B')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'2','Monocyte-FOSB')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'3','Monocyte-CACNA二D四')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'4','Macrophage')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'5','Macrophage')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'6','Neutrophil')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'7','Monocyte-IFI四四L')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'8','Monocyte-CYP一B一')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'9','Monocyte-FCGR三A')
+
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'一','1')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'二','2')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'三','3')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'四','4')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'五','5')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'六','6')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'七','7')
