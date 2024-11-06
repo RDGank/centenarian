@@ -81,3 +81,78 @@ sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'四','4')
 sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'五','5')
 sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'六','6')
 sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'七','7')
+
+
+library(SCP)
+
+pdf(file = 'cd4T-3.pdf',height=4,width=6)
+CellDimPlot(sce,group.by = 'celltype',reduction = 'tsne',
+            theme_use = 'theme_blank',label = T,label.bg = 'black',label.size = 5
+            #stat.by = 'Group'#,stat_plot_type = "bar", stat_type = "count", stat_plot_position = "dodge"
+           )
+dev.off()
+
+
+pdf(file = 'CD4T-2.pdf',height = 5,width = 9)
+CellStatPlot(sce, stat.by = "Group1", group.by = "celltype",
+             bg.by = "celltype", palette = "Set1", stat_type = "per",
+             position = "dodge")
+dev.off()
+
+sce1<-sce[,sce@meta.data$seurat_clusters%in%c(0,3,6,7,14,15,17,20)]
+sce2<-sce[,sce@meta.data$seurat_clusters%in%c(1,2,4,5,8,9,12,13,19)]
+
+
+#CD4 TN
+library(stringr)
+sce@meta.data$celltype<-sce@meta.data$seurat_clusters
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'16','CD④_TN-TMIGD②')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'15','Treg-TNFRSF④')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'14','CD④_TM-ANAX①')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'13','Treg-FOXP③')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'12','Treg-CTLA④')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'11','CD④_TM-MAF')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'10','CD④_TN-CCR⑦')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'9','CD④_TM-NEFL')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'8','CD④_Teff-GNLY')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'7','CD④_Teff-CCL⑤')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'6','CD④_TN-CCR⑦')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'5','CD④_TM-MAF')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'4','CD④_Teff-GZMB')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'3','CD④_TN-TMIGD②')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'2','CD④_TN-CCR⑦')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'1','CD④_TN-BACH②')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'0','CD④_TN-SOX④')
+
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'①','1')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'②','2')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'③','3')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'④','4')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'⑤','5')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'⑥','6')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'⑦','7')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'⑧','8')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'⑨','9')
+
+#CD8 T
+sce@meta.data$celltype<-sce@meta.data$seurat_clusters
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'17','CD⑧_TN-LEF①')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'16','CD⑧_Teff-FCGR③A')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'15','CD⑧_Tex')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'14','CD⑧_TM-CCDC①⑥⑧')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'13','MAIT')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'12','CD⑧_Teff-ADGRG①')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'11','CD⑧_Teff-FCGR③A')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'10','CD⑧_Teff-FCGR③A')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'9','CD⑧_TM-FANK①')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'8','CD⑧_Teff-FCGR③A')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'7','CD⑧_Teff-ADGRG①')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'6','CD⑧_Teff-GNLY')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'5','MAIT')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'4','CD⑧_Teff-ADGRG①')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'3','CD⑧_TM-CCR⑤')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'2','CD⑧_TN-LEF①')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'1','CD⑧_Teff-TRGV⑤')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'0','CD⑧_TN-LEF①')
+
+
