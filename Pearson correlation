@@ -1,0 +1,5 @@
+ggplot(metadata, aes(x=metadata$Aging_Score1, y=metadata$Longevity_Score1)) + 
+  geom_point(color="#A1CB4E",size=1)+ geom_smooth(method = 'lm', se = F, color = "#4DBBD5FF")+theme_bw()+
+  stat_cor(data=metadata, method = "pearson")+
+  theme_bw()+
+  labs(x='Aging_Score1',y='Longevity_Score1')
