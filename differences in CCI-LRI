@@ -1,1 +1,58 @@
 
+DotPlot(sce,features = c('CDKN2A',#p16
+                         'CDKN1A',#p21
+                         'TP53'#p53
+) ,assay = 'RNA', group.by = 'celltype')
+
+load(file = 'sce-NK-11-4.RData')
+sceNK<-sce
+load(file = 'sce-Myeloid.RData')
+sceMye<-sce                        
+load(file = 'sce-B.RData')
+sceB<-sce
+load(file = 'scecd4.RData')
+sce4T<-sce
+load(file = 'scecd8.RData')
+sce8T<-sce
+
+DimPlot(sce8T,group.by = 'celltype')
+library(Seurat)
+library(scDiffCom)
+library(data.table)
+sce<-merge(sce4T,sce8T)
+sce<-merge(sce,sceMye)
+sce<-merge(sce,sceNK)
+sce<-merge(sce,sceB)
+
+scdiffcom_object1 <- run_interaction_analysis(
+  seurat_object = seurat_object,
+  LRI_species = "human",
+  seurat_celltype_id = "celltype",
+  seurat_condition_id = list(
+    column_name = "Group",
+    cond1_name = "Child",
+    cond2_name = "Adult"
+  )
+)
+
+scdiffcom_object2 <- run_interaction_analysis(
+  seurat_object = seurat_object,
+  LRI_species = "human",
+  seurat_celltype_id = "celltype",
+  seurat_condition_id = list(
+    column_name = "Group",
+    cond1_name = "Child",
+    cond2_name = "Centenarian"
+  )
+)
+
+scdiffcom_object3 <- run_interaction_analysis(
+  seurat_object = seurat_object,
+  LRI_species = "human",
+  seurat_celltype_id = "celltype",
+  seurat_condition_id = list(
+    column_name = "Group",
+    cond1_name = "Adult",
+    cond2_name = "Centenarian"
+  )
+)
