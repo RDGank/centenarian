@@ -1,0 +1,160 @@
+DotPlot(sce,features = c('CDKN2A',#p16
+                         'CDKN1A',#p21
+                         'TP53'#p53
+) ,assay = 'RNA', group.by = 'celltype')
+
+load(file = 'sce-NK-11-4.RData')
+sce<-JoinLayers(sce,assay='RNA')
+sceNK<-sce
+load(file = 'sce-Myeloid.RData')
+sce<-JoinLayers(sce,assay='RNA')
+sceMye<-sce                        
+load(file = 'sce-B.RData')
+sce<-JoinLayers(sce,assay='RNA')
+sceB<-sce
+load(file = 'scecd4.RData')
+sce<-JoinLayers(sce,assay='RNA')
+sce4T<-sce
+load(file = 'scecd8.RData')
+sce<-JoinLayers(sce,assay='RNA')
+sce8T<-sce
+
+DimPlot(sce8T,group.by = 'celltype')
+library(Seurat)
+library(scDiffCom)
+library(data.table)
+sce<-merge(sceB,sceNK)
+sce<-JoinLayers(sce,assay='RNA')
+sce<-merge(sce,sceMye)
+sce<-JoinLayers(sce,assay='RNA')
+sce<-merge(sce,sce8T)
+sce<-JoinLayers(sce,assay='RNA')
+sce<-merge(sce,sce4T)
+
+#table(sce4T@meta.data$celltype)
+sce<-JoinLayers(sce,assay = 'RNA')
+ #sce<-merge_seurat_GEX_objects(c(sceB,sceNK),chunk_size = 5,assays = 'RNA')
+options(future.globals.maxSize=400000000000000000) 
+sce1<-sce[,sce@meta.data$Group1%in%c('Child','Adult')]
+scdiffcom_object1 <- run_interaction_analysis(
+  seurat_object = sce1,
+  LRI_species = "human",
+  seurat_celltype_id = "celltype",
+  seurat_condition_id = list(
+    column_name = "Group1",
+    cond1_name = "Child",
+    cond2_name = "Adult"
+  )
+)
+
+sce1<-sce[,sce@meta.data$Group1%in%c('Child','Centenarian')]
+scdiffcom_object2 <- run_interaction_analysis(
+  seurat_object = sce1,
+  LRI_species = "human",
+  seurat_celltype_id = "celltype",
+  seurat_condition_id = list(
+    column_name = "Group1",
+    cond1_name = "Child",
+    cond2_name = "Centenarian"
+  )
+)
+
+sce1<-sce[,sce@meta.data$Group1%in%c('Centenarian','Adult')]
+scdiffcom_object3 <- run_interaction_analysis(
+  seurat_object = sce1,
+  LRI_species = "human",
+  seurat_celltype_id = "celltype",
+  seurat_condition_id = list(
+    column_name = "Group1",
+    cond1_name = "Adult",
+    cond2_name = "Centenarian"
+  )
+)
+
+save(scdiffcom_object1,scdiffcom_object2,scdiffcom_object3,file = 'cen-CCI-Differcom.RData')
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+if (!require("shiny")) install.packages("shiny")
+if (!require("shinyWidgets")) install.packages("shinyWidgets")
+if (!require("shinythemes")) install.packages("shinythemes")
+if (!require("DT")) install.packages("DT")
+if (!require("kableExtra")) install.packages("kableExtra")
+if (!require("RColorBrewer")) install.packages("RColorBrewer")
+if (!require("igraph")) install.packages("igraph")
+if (!require("visNetwork")) install.packages("visNetwork")
+if (!require("plotly")) install.packages("plotly")
+if (!require("GOSemSim")) BiocManager::install("GoSemSim")
+if (!require("rrvgo")) BiocManager::install("rrvgo")
+if (!require("org.Hs.eg.db")) BiocManager::install("org.Hs.eg.db")
+
+reduced_go_terms <- ReduceGO(scdiffcom_object) # optional
+
+BuildShiny(
+  scdiffcom_object,
+  reduced_go_table = reduced_go_terms # NULL by default
+)
+
+scdiffcom_object<-scdiffcom_object1
+# Retrieve and display all detected CCIs
+CCI_detected <- GetTableCCI(scdiffcom_object, type = "detected", simplified = TRUE)
+
+# Number of CCIs per regulation type (here with age)
+table(CCI_detected$REGULATION)
+## 
+## DOWN FLAT  NSC   UP 
+##  115  927  820   34
+
+# Retrieve the ORA results
+ORA_results <- GetTableORA(scdiffcom_object, categories = "all", simplified = TRUE)
+
+# Categories available
+names(ORA_results)
+## [1] "LRI"               "LIGAND_COMPLEX"    "RECEPTOR_COMPLEX" 
+## [4] "ER_CELLTYPES"      "EMITTER_CELLTYPE"  "RECEIVER_CELLTYPE"
+## [7] "GO_TERMS"          "KEGG_PWS"
+
+if (!require("ggplot2")) install.packages("ggplot2")
+library(ggplot2)
+
+ggplot(
+  CCI_detected,
+  aes(
+    x = LOGFC,
+    y = -log10(BH_P_VALUE_DE + 1E-2),
+    colour = REGULATION
+  )
+) + geom_point(
+) + scale_colour_manual(
+  values = c("UP" = "red", "DOWN" = "blue", "FLAT" = "green", "NSC" = "grey")
+) + xlab(
+  "log(FC)"
+) + ylab(
+  "-log10(Adj. p-value)"
+)
+
+
+if (!require("visNetwork")) install.packages("visNetwork")
+if (!require("igraph")) install.packages("igraph")
+if (!require("kableExtra")) install.packages("kableExtra")
+if (!require("RColorBrewer")) install.packages("RColorBrewer")
+
+BuildNetwork(
+  object = scdiffcom_object3
+)
+
+
+
+PlotORA(
+  object = scdiffcom_object,
+  category = "GO_TERMS",max_terms_show = 5
+  #regulation = "UP"
+) 
+
+
+
++ theme(
+  legend.position = c(0.85, 0.4),
+  legend.key.size = unit(0.4, "cm")
+)
