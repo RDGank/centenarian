@@ -1,0 +1,365 @@
+
+load(file = 'sce-NK-11-4.RData')
+sce[["RNA"]] <- as(object = sce[["RNA"]], Class = "Assay")
+sce <- NormalizeData(sce,assay = 'RNA', normalization.method = "LogNormalize", scale.factor = 10000)
+#鉴定细胞间表达量高变的基因（feature selection）
+#这一步的目的是鉴定出细胞与细胞之间表达量相差很大的基因，用于后续鉴定细胞类型，
+#我们使用默认参数，即“vst”方法选取2000个高变基因。
+sce <- FindVariableFeatures(sce, selection.method = "vst", nfeatures = 2000)
+# Identify the 10 most highly variable genes
+top10 <- head(VariableFeatures(sce), 10)
+# plot variable features with and without labels
+plot1 <- VariableFeaturePlot(sce)
+plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE)
+plot1+plot2
+
+#Scaling the data
+all.genes <- rownames(sce)
+sce <- ScaleData(sce, features = all.genes)
+#Perform linear dimensional reduction
+sce <- RunPCA(sce, features = VariableFeatures(object = sce))
+#Examine and visualize PCA results a few different ways
+print(sce[["pca"]], dims = 1:5, nfeatures = 5)
+VizDimLoadings(sce, dims = 1:2, reduction = "pca")
+DimPlot(sce, reduction = "pca")
+DimHeatmap(sce, dims = 1, cells = 500, balanced = TRUE)
+
+#NOTE: This process can take a long time for big datasets, comment out for expediency. 
+#More approximate techniques such as those implemented in ElbowPlot() can be used to reduce computation time
+sce <- JackStraw(sce, num.replicate = 100)
+sce <- ScoreJackStraw(sce, dims = 1:20)
+JackStrawPlot(sce, dims = 1:15)
+ElbowPlot(sce)
+
+sce <- FindNeighbors(sce, dims = 1:15)
+sce <- FindClusters(sce, resolution = 1.5) 
+#这里我们设置了dims = 1:10 即选取前10个主成分来分类细胞。分类的结果如下,可以看到，细胞被分为9个类别。
+#Look at cluster IDs of the first 5 cells
+head(Idents(sce), 5)
+
+sce <- RunUMAP(sce, dims = 1:10, label = T)
+head(sce@reductions$umap@cell.embeddings) # 提取UMAP坐标值。
+#note that you can set `label = TRUE` or use the LabelClusters function to help label individual clusters
+p1 <- DimPlot(sce, reduction = "umap",label.size = )
+#T-SNE
+sce <- RunTSNE(sce, dims = 1:10)
+head(sce@reductions$tsne@cell.embeddings)
+p2 <- DimPlot(sce, reduction = "tsne")
+p1 + p2
+DimPlot(sce,label = T,group.by = 'orig.ident')
+
+sce<-FindClusters(sce,resolution = 0.5)
+DimPlot(sce,label = T)
+
+library(COSG)
+cosg_marker<-cosg(sce)
+
+DotPlot(sce,features = c(cosg_marker$names[1:10,12]),assay = 'RNA')
+
+DotPlot(sce,features = c('IL7R'),assay = 'RNA')
+
+
+library(stringr)
+sce@meta.data$celltype<-sce@meta.data$seurat_clusters
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'11','')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'10','')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'9','')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'8','NK_IL⑦R')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'7','')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'6','')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'5','')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'4','')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'3','')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'2','')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'1','')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'0','')
+
+sce<-FindClusters(sce,resolution = 0.4)
+DimPlot(sce,label = T,group.by = 'orig.ident')
+
+cosg_marker<-cosg(sce)
+
+g<-cosg_marker$names[1,1:5]
+g<-as.character(g)
+VlnPlot(sce,features = c(g,'GZMH'),assay = 'RNA')
+
+DotPlot(sce,features = cosg_marker$names[4,1:5])
+sce<-sce[,sce@meta.data$seurat_clusters%in%c(0:19,22,24:44)]
+
+scenk56<-sce
+
+save(scenk16,scenk56,file = 'sce-nk-sub-12-22.RData')
+
+DotPlot(sce,features = cosg_marker$names[1:10,5],assay = 'RNA')
+DotPlot(sce,features = cosg_marker$names[2,1:5],assay = 'RNA')
+DotPlot(sce,features = c('IL7R','CCL3','GZMH','CREM','CXCR6','IL10RA'),assay = 'RNA')
+
+VlnPlot(sce,features = c('CCL3','CCL5'),assay = 'RNA')
+
+DimPlot(sce,group.by = 'orig.ident',label = T)
+DimPlot(sce,reduction = 'tsne')
+sce<-FindClusters(sce,resolution = 0.4)
+library(stringr)
+sce@meta.data$celltype<-sce@meta.data$seurat_clusters
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'0','NK_CCL⑤')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'1','NK_LGALS①')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'2','NK_FCER①G')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'3','NK_CCL⑤')
+sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'4','NK_PLAAT②')
+#sce@meta.data$celltype<-str_replace(sce@meta.data$celltype,'','')
+
+
+DimPlot(sce,group.by = 'celltype')
+
+
+
+library(SCP)
+
+CellDimPlot(sce,group.by = 'celltype',label = T)
+CellStatPlot(scenk16,stat.by = 'Group',group.by = 'celltype')
+#scenk56<-sce
+
+p1<-CellDimPlot(scenk16,group.by = 'celltype',theme_use = 'theme_blank',show_stat = F,label = T,
+                title = 'CD56-hi CD16dim',label.size = 10)
+p2<-CellDimPlot(scenk56,group.by = 'celltype',label = T,show_stat = F,theme_use = 'theme_blank',
+                title = 'CD56-dim CD16-hi',label.size = 10)
+p1+p2
+
+p3<-CellStatPlot(scenk16,group.by = 'celltype',stat.by = 'Group',label = T,plot_type = 'ring',label.size =5 )
+p4<-CellStatPlot(scenk56,group.by = 'celltype',stat.by = 'Group',label = T,plot_type = 'ring',label.size =5 )
+p5<-CellStatPlot(scenk16,group.by = 'celltype',stat.by = 'Group1',label = T,plot_type = 'ring',label.size =5 )
+p6<-CellStatPlot(scenk56,group.by = 'celltype',stat.by = 'Group1',label = T,plot_type = 'ring',label.size =5 )
+library(COSG)
+Idents(sce)<-'celltype'
+cosg_marker<-cosg(sce)
+
+sce<-merge(scenk16,scenk56)
+sce<-JoinLayers(sce,assay = 'RNA')
+
+g<-cosg_marker$names[1:10,1:8]
+g<-as.character(g)
+
+sce <- RunDEtest(srt = sce, group_by = "celltype", fc.threshold = 1, only.pos = FALSE)
+VolcanoPlot(srt = sce, group_by = "celltype")
+Idents(sce)<-'celltype'
+sce[["RNA"]] <- as(object = sce[["RNA"]], Class = "Assay")
+ht4 <- GroupHeatmap(sce,assay = 'RNA',
+                    features = c('NCAM1','FCGR3A','GCHFR','CD38','KLRC2','TXNDC11','LGALS1','FCER1G',
+                                 'CCL5','PLAAT2'),  group.by = "celltype",
+                    heatmap_palette = "YlOrRd",
+                    cell_annotation = c("Group1"), label_size = 20,
+                    #cell_annotation_palette = c("Dark2", "Paired", "Paired"),
+                    #cell_annotation_params = list(height = unit(10, "mm")),
+                    #feature_annotation = c("TF", "CSPA"),
+                    #feature_annotation_palcolor = list(c("gold", "steelblue"), c("forestgreen")),
+                    add_dot = TRUE, add_bg = TRUE, nlabel = 0, show_row_names = TRUE
+)
+
+p7<-ht4$plot
+
+save(scenk16,scenk56,sce,file = 'sce-nk-sub-12-22.RData')
+
+pdf(file = 'NK-24-12-23/nk.pdf',height = 20,width = 15)
+(p1+p3+p2+p4)/p5
+dev.off()
+
+
+Idents(sce)<-'Group'
+
+sce.marker<-FindAllMarkers(sce,only.pos = T,min.pct = 0.1)
+
+
+dim(sce)
+
+gene<-sce.marker[1:100,]
+
+
+sce <- RunDEtest(srt = sce, group_by = "Group", slot = 'counts',fc.threshold = 1, only.pos = FALSE)
+
+sce <- RunEnrichment(
+  srt = sce, group_by = "Group", db = "GO_BP", 
+  DE_threshold = "avg_log2FC > log2(1.5) & p_val_adj < 0.05"
+)
+EnrichmentPlot(srt = sce, group_by = "Group", plot_type = "comparison")
+
+
+sce <- RunDEtest(srt = sce, group_by = "celltype", slot = 'counts',fc.threshold = 1, only.pos = FALSE)
+
+sce <- RunEnrichment(
+  srt = sce, group_by = "celltype", db = "GO_BP", 
+  DE_threshold = "avg_log2FC > log2(1.5) & p_val_adj < 0.05"
+)
+EnrichmentPlot(srt = sce, group_by = "celltype", plot_type = "comparison")
+pdf(file = 'NK-24-12-23/nkvol.pdf',height = 7,width = 16)
+VolcanoPlot(srt = sce, group_by = "celltype")
+dev.off()
+
+FeatureHeatmap(sce,features = gene$gene,group.by = 'Group')
+FeatureStatPlot(sce,stat.by = gene$gene[1:5],group.by = 'celltype',split.by = 'Group',assay = 'RNA')
+
+
+
+devtools::install_github("junjunlab/ClusterGVis")
+
+
+remove.packages("BiocManager")
+library(BiocManager)
+install.packages("BiocManager")
+BiocManager::install(update=TRUE, ask=FALSE)
+
+load(file = 'sce-nk-sub-12-22.RData')
+
+
+
+dim(scenk56)
+sce[["RNA5"]] <- as(object = sce[["RNA"]], Class = "Assay5")
+
+sce@assays$RNA<-sce@assays$RNA
+
+enrich <- enrichCluster(object = sce,
+                        OrgDb = org.Hs.eg.db,
+                        type = c("BP"),
+                        organism = "hsa",
+                        pvalueCutoff = 0.5,
+                        topn = 5
+                        )
+library(Seurat)
+Idents(sce)
+
+Idents(sce)<-'celltype'
+scemarker1<-sce.markers
+Idents(sce)<-'Group1'
+sce.marker<-FindAllMarkers(sce)
+
+sce.markers<-sce.marker
+Centenarian=sce.markers[sce.markers$cluster=='Centenarian',]$gene
+Adult=sce.markers[sce.markers$cluster=='Adult',]$gene
+Child=sce.markers[sce.markers$cluster=='Child',]$gene
+
+total <- list(Centenarian=Centenarian,Adult=Adult,Child=Child)
+
+
+  library(org.Hs.eg.db)
+for (i in 1:3) {
+
+  total[[i]]=as.character(na.omit(AnnotationDbi::select(org.Hs.eg.db,
+                                                        keys = total[[i]],
+                                                        columns = 'ENTREZID',
+                                                        keytype = 'SYMBOL')[,2]))}
+lapply(total, head)
+
+
+library(clusterProfiler)
+xx1 <- compareCluster(total, fun="enrichGO",
+                     OrgDb = org.Hs.eg.db,
+                     pvalueCutoff=0.05) # pvalueCutoff显著性应该为0.05
+table(xx@compareClusterResult$Cluster) #每个基因集富集个数
+
+head(as.data.frame(xx)) 
+#dotplot(xx) #气泡图
+df_go_diff <- as.data.frame(xx)
+
+p8<-dotplot(xx1,showCategory=20,title='GO',font.size=7)
+xx2 <- compareCluster(total, fun="enrichKEGG", organism="hsa", 
+                     pvalueCutoff=0.01,pAdjustMethod = "BH",
+                     qvalueCutoff = 0.05)
+
+p9<-dotplot(xx2,showCategory=20,title="KEGG",font.size=7)
+p9
+library(patchwork)
+
+layout <- '
+AABBCC
+DDEEFF
+GGGHHH
+GGGIII
+'
+
+dev.new(width = 8000000, height = 600000)
+pdf(file = 'NK-24-12-23/NKall-new-more.pdf',height = 21,width = 20)
+P<-(p1+p3+p5+p2+p4+p6)/(p7+p8+p9)#+plot_layout(design = layout,axes = 'collect')
+P
+dev.off()
+
+
+library(SCP)
+load(file = 'sce-nk-sub-12-22.RData')
+
+library(COSG)
+library(Seurat)
+Idents(sce)
+Idents(sce)<-'celltype'
+cosg_merker<-cosg(sce)
+
+
+ht1 <- FeatureHeatmap(
+  srt = sce, features = gene, group.by = "celltype",
+  split.by = "Group1", cell_split_palette = "Dark2",slot = 'data',
+  assay = 'RNA',libsize = 10,label_size=10
+  
+)
+#> 'magick' package is suggested to install to give better rasterization.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+#> `use_raster` is automatically set to TRUE for a matrix with more than 2000 rows. You can control
+#> `use_raster` argument by explicitly setting TRUE/FALSE to it.
+#> 
+#> Set `ht_opt$message = FALSE` to turn off this message.
+p10<-ht1$plot
+Idents(sce)<-'celltype'
+sce.marker1<-FindAllMarkers(sce)
+sce.markers<-sce.marker1
+NK_GCHFR=sce.markers[sce.markers$cluster=='NK_GCHFR',]$gene
+NK_CD38=sce.markers[sce.markers$cluster=='NK_CD38',]$gene
+NK_KLRC2=sce.markers[sce.markers$cluster=='NK_KLRC2',]$gene
+NK_TXNDC11=sce.markers[sce.markers$cluster=='NK_TXNDC11',]$gene
+NK_LGALS1=sce.markers[sce.markers$cluster=='NK_LGALS1',]$gene
+NK_FCER1G=sce.markers[sce.markers$cluster=='NK_FCER1G',]$gene
+NK_CCL5=sce.markers[sce.markers$cluster=='NK_CCL5',]$gene
+NK_PLAAT2=sce.markers[sce.markers$cluster=='NK_PLAAT2',]$gene
+total <- list(NK_GCHFR=NK_GCHFR,NK_CD38=NK_CD38,NK_KLRC2=NK_KLRC2,
+              NK_TXNDC11=NK_TXNDC11,NK_LGALS1=NK_LGALS1,NK_FCER1G=NK_FCER1G,
+              NK_CCL5=NK_CCL5,NK_PLAAT2=NK_PLAAT2)
+
+
+library(org.Hs.eg.db)
+for (i in 1:8) {
+  
+  total[[i]]=as.character(na.omit(AnnotationDbi::select(org.Hs.eg.db,
+                                                        keys = total[[i]],
+                                                        columns = 'ENTREZID',
+                                                        keytype = 'SYMBOL')[,2]))}
+lapply(total, head)
+
+
+library(clusterProfiler)
+xx3 <- compareCluster(total, fun="enrichGO",
+                     OrgDb = org.Hs.eg.db,
+                     pvalueCutoff=0.05) # pvalueCutoff显著性应该为0.05
+table(xx@compareClusterResult$Cluster) #每个基因集富集个数
+
+head(as.data.frame(xx)) 
+
+library(ggplot2)
+p11<-dotplot(xx3,showCategory=15,title='GO',font.size=3)#+coord_flip()
+xx4 <- compareCluster(total, fun="enrichKEGG", organism="hsa", 
+                     pvalueCutoff=0.01,pAdjustMethod = "BH",
+                     qvalueCutoff = 0.05)
+
+p12<-dotplot(xx,showCategory=15,title="KEGG",font.size=9)
+
+
+p11+p12
+
+
+
+p8+p9+p11+p12
+
+
+
+pdf(file = 'NK-24-12-23/NKall-12-24.pdf',height = 40,width = 27)
+P<-(p1+p3+p5+p2+p4+p6)/(p7+p10)/(p8+p9+p11+p12)#+plot_layout(design = layout,axes = 'collect')
+P
+dev.off()
+
+
