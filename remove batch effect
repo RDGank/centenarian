@@ -44,3 +44,21 @@ HAR_rm_batch<-function(project,split.by){
 }
 #eg
 sce<-HAR_rm_batch(sce,'orig.ident')
+
+
+#bbknn
+
+sce <- sce %>% NormalizeData(verbose = F) %>%
+  FindVariableFeatures(selection.method = "vst", nfeatures = 2000, verbose = F) %>% 
+  ScaleData(verbose = F) %>%
+  RunPCA(npcs = 50, verbose = F)
+
+#### 3. bbknn
+sce <- sce %>% RunBBKNN(reduction = "pca", 
+                                    run_TSNE = F,
+                                    batch_key = "orig.ident")
+
+sce <- sce %>% FindNeighbors(reduction = "pca", k.param = 10, dims = 1:30) %>% 
+  FindClusters(resolution = 0.5, algorithm = 1, graph.name="RNA_bbknn")%>% 
+  identity()
+
